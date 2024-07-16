@@ -1,4 +1,7 @@
-sklearn
+torch==2.2.1
+torchtext
+transformers==4.41.2
+scikit-learn
 matplotlib
 sentence-transformers
 jupyter
