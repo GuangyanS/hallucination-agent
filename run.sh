@@ -1,5 +1,5 @@
 python run_inference.py \
-    --dataset gsm8k \
+    --dataset commonsensqa \
     --demo_path demos/multiarith \
-    --model gpt-3.5-turbo-1106 \
-    --method zero_shot_cot \
+    --model Qwen2-0.5B \
+    --method zero_shot_cot 
