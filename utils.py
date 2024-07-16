@@ -15,6 +15,8 @@ import random
 import time
 import datetime
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 def shuffleDict(d):
   keys = list(d.keys())
   random.shuffle(keys)
@@ -108,6 +110,28 @@ class Decoder():
     def decode(self, args, input, max_length):
         response = decoder_for_gpt3(args, input, max_length)
         return response
+
+class HF_Decoder():
+    def __init__(self, args):
+        self.tokenizer = AutoTokenizer.from_pretrained(args.model_path+args.model)
+        self.model = AutoModelForCausalLM.from_pretrained(args.model_path+args.model, device_map="auto", torch_dtype=torch.float16)
+ 
+    def decode(self, args, input, max_length):
+        model_inputs = self.tokenizer(input, return_tensors="pt").to("cuda")
+        outputs = self.model.generate(**model_inputs, 
+                                      return_dict_in_generate=True, 
+                                      output_scores=True, 
+                                      max_length=max_length,
+                                      do_sample=True,
+                                      temperature=args.temperature,
+                                      top_p=0.9
+                                      )
+        
+
+        response = self.tokenizer.batch_decode(outputs.sequences[:, model_inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
+        
+        return response
+    
 
 def data_reader(args):
 

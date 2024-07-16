@@ -17,7 +17,7 @@ def main():
     print(os.getenv("OPENAI_API_KEY")[0:5] + '**********')
     
     # Initialize decoder class (load model and tokenizer) ...
-    decoder = Decoder()
+    decoder = HF_Decoder(args)
     
     print("setup data loader ...")
     dataloader = setup_data_loader(args)
@@ -127,8 +127,9 @@ def parse_arguments():
     
     parser.add_argument("--max_num_worker", type=int, default=0, help="maximum number of workers for dataloader")
     
+    parser.add_argument("--model_path", type=str, default="/wudi/gysun/init_weights/", help="model path")
     parser.add_argument(
-        "--model", type=str, default="gpt3-xl", choices=["gpt3", "gpt3-medium", "gpt3-large", "gpt3-xl", "code-davinci-002"], help="model used for decoding. Note that 'gpt3' are the smallest models."
+        "--model", type=str, default="gpt3-xl", choices=["gpt3", "Meta-Llama-3-8B-Instruct", "Qwen2-0.5B"], help="model used for decoding. Note that 'gpt3' are the smallest models."
     )
     
     parser.add_argument(
