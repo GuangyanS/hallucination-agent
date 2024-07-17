@@ -131,7 +131,7 @@ def parse_arguments():
     
     parser.add_argument("--max_num_worker", type=int, default=0, help="maximum number of workers for dataloader")
     
-    parser.add_argument("--model_path", type=str, default="/wudi/gysun/init_weights/", help="model path")
+    parser.add_argument("--model_path", type=str, default="init_weights/", help="model path")
     parser.add_argument(
         "--model", type=str, default="gpt3-xl", choices=["gpt3", "Meta-Llama-3-8B-Instruct", "Qwen2-0.5B"], help="model used for decoding. Note that 'gpt3' are the smallest models."
     )
@@ -146,7 +146,7 @@ def parse_arguments():
         "--max_length_cot", type=int, default=256, help="maximum length of output tokens by model for reasoning extraction"
     )
     parser.add_argument(
-        "--max_length_direct", type=int, default=512, help="maximum length of output tokens by model for answer extraction"
+        "--max_length_direct", type=int, default=256, help="maximum length of output tokens by model for answer extraction"
     )
     parser.add_argument(
         "--limit_dataset_size", type=int, default=0, help="whether to limit test dataset size. if 0, the dataset size is unlimited and we use all the samples in the dataset for testing."
