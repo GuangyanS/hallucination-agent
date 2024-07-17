@@ -2,10 +2,14 @@
 
 ## Requirements
 
-Python>=3.8
 ```
-pip install torch==1.8.2+cu111 torchtext==0.9.2 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
-pip install -r requirements.txt
+conda create -n halu python=3.10 -y
+conda activate halu
+
+git clone https://github.com/GuangyanS/hallucination-agent
+cd hallucination-agent
+pip install --upgrade pip 
+pip install -r requirement.txt
 ```
 
 ## Datasets
@@ -14,8 +18,10 @@ Download the datasets from the following:
 
 ```
 https://github.com/kojima-takeshi188/zero_shot_cot/tree/main/dataset
-https://github.com/kojima-takeshi188/zero_shot_cot/tree/main/log
 ```
 
 ## Quick Start
 
+```
+sh run.sh
+```
