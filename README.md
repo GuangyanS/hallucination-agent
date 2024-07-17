@@ -21,7 +21,9 @@ huggingface-cli login
 KinGeorge
 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
 
-huggingface-cli download --repo-type model meta-llama/Meta-Llama-3-8B-Instruct --local-dir <sys_path>/hallucination-agent/init_models/Meta-Llama-3-8B-Instruct
+cd <sys_path>/hallucination-agent
+mkdir init_models
+huggingface-cli download --repo-type model meta-llama/Meta-Llama-3-8B-Instruct --local-dir init_models/Meta-Llama-3-8B-Instruct
 ```
 
 ## Quick Start
