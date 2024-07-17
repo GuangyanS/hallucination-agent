@@ -18,10 +18,10 @@ pip install -r requirements.txt
 
 ```
 huggingface-cli login
+KinGeorge
+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
 
 huggingface-cli download --repo-type model meta-llama/Meta-Llama-3-8B-Instruct --local-dir <sys_path>/hallucination-agent/init_models/Meta-Llama-3-8B-Instruct
-
-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
 ```
 
 ## Quick Start
