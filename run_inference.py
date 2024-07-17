@@ -33,7 +33,7 @@ def main():
     total = 0
     correct_list = []
     # create experiment folder if not avaibale
-    if not os.path.exists(args.output_dir):
+    if not os.path.exists('experiment'):
         os.makedirs(args.output_dir, exist_ok=True)
         
     with open(args.output_dir, "a") as wp:
@@ -146,7 +146,7 @@ def parse_arguments():
         "--max_length_cot", type=int, default=256, help="maximum length of output tokens by model for reasoning extraction"
     )
     parser.add_argument(
-        "--max_length_direct", type=int, default=32, help="maximum length of output tokens by model for answer extraction"
+        "--max_length_direct", type=int, default=512, help="maximum length of output tokens by model for answer extraction"
     )
     parser.add_argument(
         "--limit_dataset_size", type=int, default=0, help="whether to limit test dataset size. if 0, the dataset size is unlimited and we use all the samples in the dataset for testing."
@@ -155,7 +155,7 @@ def parse_arguments():
         "--api_time_interval", type=float, default=1.0, help="sleep between runs to avoid excedding the rate limit of openai api"
     )
     parser.add_argument(
-        "--temperature", type=float, default=0, help="temperature for GPT-3"
+        "--temperature", type=float, default=0.9, help="temperature for GPT-3"
     )
     parser.add_argument(
         "--log_dir", type=str, default="./log/", help="log directory"
