@@ -131,7 +131,7 @@ def parse_arguments():
     
     parser.add_argument("--max_num_worker", type=int, default=0, help="maximum number of workers for dataloader")
     
-    parser.add_argument("--model_path", type=str, default="init_weights/", help="model path")
+    parser.add_argument("--model_path", type=str, default="/wudi/gysun/init_weights/", help="model path")
     parser.add_argument(
         "--model", type=str, default="gpt3-xl", choices=["gpt3", "Meta-Llama-3-8B-Instruct", "Qwen2-0.5B"], help="model used for decoding. Note that 'gpt3' are the smallest models."
     )
