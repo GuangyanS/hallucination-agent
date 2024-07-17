@@ -9,23 +9,19 @@ conda activate halu
 git clone https://github.com/GuangyanS/hallucination-agent
 cd hallucination-agent
 pip install --upgrade pip 
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Datasets
 
-Download the datasets from the following:
-
-```
-https://github.com/kojima-takeshi188/zero_shot_cot/tree/main/dataset
-```
-
-download this under hallucination-agent so we have `hallucination-agent/dataset/xxx`
-
 ## Models
 
 ```
+huggingface-cli login
+
 huggingface-cli download --repo-type model meta-llama/Meta-Llama-3-8B-Instruct --local-dir <sys_path>/hallucination-agent/init_models/Meta-Llama-3-8B-Instruct
+
+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
 ```
 
 ## Quick Start
