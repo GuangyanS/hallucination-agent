@@ -31,5 +31,7 @@ huggingface-cli download --repo-type model meta-llama/Meta-Llama-3-8B-Instruct -
 ## Quick Start
 
 ```
-sh run.sh
+cd hallucination-agent
+conda activate halu
+sbatch run.slurm
 ```
