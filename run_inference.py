@@ -32,6 +32,10 @@ def main():
 
     total = 0
     correct_list = []
+    # create experiment folder if not avaibale
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir, exist_ok=True)
+        
     with open(args.output_dir, "a") as wp:
 
         for i, data in enumerate(dataloader):
