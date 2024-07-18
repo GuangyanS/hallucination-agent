@@ -6,6 +6,7 @@ from statistics import mean
 from torch.utils.data import Dataset
 # import openai
 import os
+import logging
 import multiprocessing
 import json
 import numpy as np
@@ -127,10 +128,31 @@ class HF_Decoder():
                                       top_p=0.9
                                       )
         
+        # Get log_likelihoods.
+        # outputs.scores are the logits for the generated token.
+        # outputs.scores is a tuple of len = n_generated_tokens.
+        # Each entry is shape (bs, vocabulary size).
+        # outputs.sequences is the sequence of all tokens: input and generated.
+        transition_scores = self.model.compute_transition_scores(
+            outputs.sequences, outputs.scores, normalize_logits=True)
+        # Transition_scores[0] only contains the scores for the first generated tokens.
 
+        log_likelihoods = [score.item() for score in transition_scores[0]]
+        # if len(log_likelihoods) == 1:
+        #     logging.warning('Taking first and only generation for log likelihood!')
+        #     log_likelihoods = log_likelihoods
+        # else:
+        #     log_likelihoods = log_likelihoods[:n_generated]
+
+        # if len(log_likelihoods) == self.max_new_tokens:
+        #     logging.warning('Generation interrupted by max_token limit.')
+
+        if len(log_likelihoods) == 0:
+            raise ValueError
+        
         response = self.tokenizer.batch_decode(outputs.sequences[:, model_inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
         
-        return response
+        return response, log_likelihoods
     
 
 def data_reader(args):

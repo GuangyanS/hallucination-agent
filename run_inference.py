@@ -4,6 +4,7 @@ Adapted from https://github.com/kojima-takeshi188/zero_shot_cot
 
 import argparse
 from utils import *
+import pickle
 
 def main():
     args = parse_arguments()
@@ -32,88 +33,94 @@ def main():
 
     total = 0
     correct_list = []
+    generations = {}
     # create experiment folder if not avaibale
     if not os.path.exists('experiment'):
         os.makedirs(args.output_dir, exist_ok=True)
         
-    with open(args.output_dir, "a") as wp:
 
-        for i, data in enumerate(dataloader):
-            if i < args.resume_id - 1:
-            # if i < 297:
-                continue
-            output_line = {}
-            
-            print('*************************')
-            print("{}st data".format(i+1))
-                    
-            # Prepare question template ...
-            x, y = data
-            x = "Q: " + x[0] + "\n" + "A:"
-            y = y[0].strip()
-            
-            # print(x, y)
-            
-            output_line["question"] = x
-            output_line["gold_ans"] = y
+    for i, data in enumerate(dataloader):
+        if i < args.resume_id - 1:
+        # if i < 297:
+            continue
+        output_line = {}
+        
+        print('*************************')
+        print("{}st data".format(i+1))
+                
+        # Prepare question template ...
+        x, y = data
+        x = "Q: " + x[0] + "\n" + "A:"
+        y = y[0].strip()
+        
+        # print(x, y)
+        
+        output_line["question"] = x
+        output_line["gold_ans"] = y
 
-            if args.method == "zero_shot":
-                x = x + " " + args.direct_answer_trigger_for_zeroshot
-            elif args.method == "zero_shot_cot":
-                x = x + " " + args.cot_trigger
-            elif args.method == "few_shot":
-                x = demo + x
-            elif args.method == "few_shot_cot":
-                x = demo + x
-            elif args.method == "auto_cot":
-                x = demo + x + " " + args.cot_trigger
-            else:
-                raise ValueError("method is not properly defined ...")
-            
-            # Answer experiment by generating text ...
-            max_length = args.max_length_cot if "cot" in args.method else args.max_length_direct
-            z = decoder.decode(args, x, max_length)
+        if args.method == "zero_shot":
+            x = x + " " + args.direct_answer_trigger_for_zeroshot
+        elif args.method == "zero_shot_cot":
+            x = x + " " + args.cot_trigger
+        elif args.method == "few_shot":
+            x = demo + x
+        elif args.method == "few_shot_cot":
+            x = demo + x
+        elif args.method == "auto_cot":
+            x = demo + x + " " + args.cot_trigger
+        else:
+            raise ValueError("method is not properly defined ...")
+        
+        # Answer experiment by generating text ...
+        max_length = args.max_length_cot if "cot" in args.method else args.max_length_direct
+        z, log_likelihoods = decoder.decode(args, x, max_length)
 
-            output_line["rationale"] = z
+        output_line["rationale"] = z
+        output_line["token_log_likelihoods"] = log_likelihoods
 
-            # Answer extraction for zero-shot-cot ...
-            if args.method == "zero_shot_cot":
-                z2 = x + z + " " + args.direct_answer_trigger_for_zeroshot_cot
-                max_length = args.max_length_direct
-                pred = decoder.decode(args, z2, max_length)
-                print(z2 + pred)
-            else:
-                pred = z
-                print(x + pred)
+        # Answer extraction for zero-shot-cot ...
+        if args.method == "zero_shot_cot":
+            z2 = x + z + " " + args.direct_answer_trigger_for_zeroshot_cot
+            max_length = args.max_length_direct
+            pred, _ = decoder.decode(args, z2, max_length)
+            print(z2 + pred)
+        else:
+            pred = z
+            print(x + pred)
 
-            # Clensing of predicted answer ...
-            pred = answer_cleansing(args, pred)
-            
-            
-            output_line["pred_ans"] = pred
-            output_line["wrap_que"] = x
+        # Clensing of predicted answer ...
+        pred = answer_cleansing(args, pred)
+        
+        
+        output_line["pred_ans"] = pred
+        output_line["wrap_que"] = x
 
-            output_json = json.dumps(output_line)
-            wp.write(output_json + '\n')
+        # Choose the most frequent answer from the list ...
+        print("pred : {}".format(pred))
+        print("GT : " + y)
+        print('*************************')
+        
+        # Checking answer ...
+        correct = (np.array([pred]) == np.array([y])).sum().item()
+        correct_list.append(correct)
+        total += 1 #np.array([y]).size(0)
+        
+        output_line["correct"] = correct
+        generations[i].update(output_line)
+        
+        if (args.limit_dataset_size != 0) and ((i+1) >= args.limit_dataset_size):
+            break
+            #raise ValueError("Stop !!")
 
-            # Choose the most frequent answer from the list ...
-            print("pred : {}".format(pred))
-            print("GT : " + y)
-            print('*************************')
-            
-            # Checking answer ...
-            correct = (np.array([pred]) == np.array([y])).sum().item()
-            correct_list.append(correct)
-            total += 1 #np.array([y]).size(0)
-            
-            if (args.limit_dataset_size != 0) and ((i+1) >= args.limit_dataset_size):
-                break
-                #raise ValueError("Stop !!")
 
     # Calculate accuracy ...
     accuracy = (sum(correct_list) * 1.0 / total) * 100
     print("accuracy : {}".format(accuracy))
     
+    # save pickle
+    with open(args.output_dir, 'wb') as f:
+        pickle.dump(generations, f)
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Zero-shot-CoT")
 
@@ -140,7 +147,7 @@ def parse_arguments():
         "--method", type=str, default="auto_cot", choices=["zero_shot", "zero_shot_cot", "few_shot", "few_shot_cot", "auto_cot"], help="method"
     )
     parser.add_argument(
-        "--output_dir", type=str, default="experiment/multiarith", help="output directory"
+        "--output_dir", type=str, default="experiment/strategyqa.pkl", help="output directory"
     )
     parser.add_argument(
         "--max_length_cot", type=int, default=256, help="maximum length of output tokens by model for reasoning extraction"
