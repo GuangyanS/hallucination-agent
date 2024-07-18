@@ -41,8 +41,8 @@ def main():
 
     for i, data in enumerate(dataloader):
         # if i < args.resume_id - 1:
-        if i > 10:
-            continue
+        # if i > 10:
+        #     continue
         output_line = {}
         
         print('*************************')
