@@ -330,10 +330,12 @@ def data_reader(args):
             answers.append(a)
 
     elif args.dataset == "brainteaser":
+        data = []
         sentence_data_path = args.dataset_path + 'sentence_puzzle.npy'
         wordplay_data_list = args.dataset_path + 'word_puzzle.npy'
         sentence_data_list = list(np.load(sentence_data_path,allow_pickle=True))
         wordplay_data_list = list(np.load(wordplay_data_list,allow_pickle=True))
+        
         data.extend(sentence_data_list)
         data.extend(wordplay_data_list)
         for sample in data:
