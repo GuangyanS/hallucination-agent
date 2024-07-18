@@ -227,10 +227,14 @@ def data_reader(args):
           answers.append(a)
         
     elif args.dataset == "sarcasm":
+        prompt = 'Task: Detect sarcasm, help me identify whether this sentence is sarcastic.' + '\n' \
+                    'First, we need to understand what sarcasm is. Sarcasm is a form of verbal irony, '+ '\n' \
+                    'where the intended meaning of the words is the opposite of the literal meaning. '+ '\n' \
+                    'In other words, the speaker is saying one thing but meaning the opposite. '
         with open(args.dataset_path) as f:
             json_data = json.load(f)
             for line in json_data:
-                q = line["headline"]
+                q = line["headline"] + prompt
                 a = line["is_sarcastic"]
                 if a == 1:
                     a = "yes"
