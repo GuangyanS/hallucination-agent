@@ -289,7 +289,25 @@ def data_reader(args):
           q = q + " " + choice
           questions.append(q)
           answers.append(a)            
-          
+    
+    elif args.dataset in ("riddlesense"):
+        choice_index = ['A','B','C','D','E']
+        with open(args.dataset_path) as file:
+            for line in file:
+                data = json.loads(line)
+                q = data["question"]['stem']
+                choice = "Answer Choices:"
+                for c in data["question"]["choices"]:
+                    choice += " ("
+                    choice += c["label"]
+                    choice += ") "
+                    choice += c["text"]
+                q = q + " " + choice
+                a = data["answerKey"]
+                questions.append(q)
+                answers.append(a)
+
+
     elif args.dataset in ("coin_flip", "last_letters"):
       with open(args.dataset_path) as f:
         json_data = json.load(f)
@@ -369,7 +387,7 @@ def answer_cleansing(args, pred, must_choice=False):
         answer_flag = True if len(preds) > 1 else False 
         pred = preds[-1]
 
-    if args.dataset in ("aqua", "commonsensqa"):
+    if args.dataset in ("aqua", "commonsensqa", "riddlesense"):
         pred = re.findall(r'A|B|C|D|E', pred)
     elif args.dataset == "bigbench_date":
         pred = re.findall(r'A|B|C|D|E|F', pred)
@@ -381,7 +399,7 @@ def answer_cleansing(args, pred, must_choice=False):
         else:
             pred = pred.replace(",", "")
             pred = [s for s in re.findall(r'-?\d+\.?\d*', pred)]
-    elif args.dataset in ("strategyqa", "coin_flip", "sarcasm"):
+    elif args.dataset in ("strategyqa", "coin_flip"):
         pred = pred.lower()
         pred = re.sub("\"|\'|\n|\.|\s|\:|\,"," ", pred)
         pred = pred.split(" ")

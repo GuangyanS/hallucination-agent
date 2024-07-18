@@ -126,7 +126,7 @@ def parse_arguments():
 
     parser.add_argument("--random_seed", type=int, default=1, help="random seed")
     parser.add_argument(
-        "--dataset", type=str, default="multiarith", choices=["aqua", "gsm8k", "commonsensqa", "addsub", "multiarith",  "strategyqa", "sarcasm", "svamp", "singleeq", "coin_flip", "last_letters", "riddlesense", "brainteaser"], help="dataset used for experiment"
+        "--dataset", type=str, default="multiarith", choices=["aqua", "gsm8k", "commonsensqa", "addsub", "multiarith",  "strategyqa", "sarcasm", "svamp", "singleeq", "coin_flip", "last_letters", "riddlesense", "brainteaser", "macgyver"], help="dataset used for experiment"
     )
     parser.add_argument(
         "--demo_path", type=str, default="demos/multiarith", help="pre-generated demos used for experiment"
@@ -215,6 +215,9 @@ def parse_arguments():
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     elif args.dataset == "brainteaser":
         args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/Brainteaser/brainteaser.jsonl"
+        args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
+    elif args.dataset == "macgyver":
+        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/MacGyver/macgyver.jsonl"
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     else:
         raise ValueError("dataset is not properly defined ...")
