@@ -329,6 +329,30 @@ def data_reader(args):
             questions.append(q)
             answers.append(a)
 
+    elif args.dataset == "brainteaser":
+        sentence_data_path = args.dataset_path + 'sentence_puzzle.npy'
+        wordplay_data_list = args.dataset_path + 'word_puzzle.npy'
+        sentence_data_list = list(np.load(sentence_data_path,allow_pickle=True))
+        wordplay_data_list = list(np.load(wordplay_data_list,allow_pickle=True))
+        data.extend(sentence_data_list)
+        data.extend(wordplay_data_list)
+        for sample in data:
+            choice_list = ['A', 'B', 'C', 'D']
+            q = """
+    
+            Question: {}
+            Choice:
+            (A) {}
+            (B) {}
+            (C) {}
+            (D) {}
+
+            Answer:""".format(sample['question'],sample['choice_list'][0],sample['choice_list'][1],sample['choice_list'][2],sample['choice_list'][3])
+
+            questions.append(q)
+            answers.append(choice_list[sample['choice_list'].index(sample['label'])])
+
+
 
     elif args.dataset in ("coin_flip", "last_letters"):
       with open(args.dataset_path) as f:
@@ -415,7 +439,7 @@ def answer_cleansing(args, pred, must_choice=False):
         pred = re.findall(r'A|B|C|D|E|F', pred)
     elif args.dataset in ("object_tracking"):
         pred = re.findall(r'A|B|C', pred)
-    elif args.dataset in ("gsm8k", "addsub", "multiarith", "svamp", "singleeq"):
+    elif args.dataset in ("gsm8k", "addsub", "multiarith", "svamp", "singleeq", "brainteaser"):
         if must_choice:
             pred = re.findall(r'A|B|C|D', pred)
         else:
@@ -488,7 +512,7 @@ def answer_cleansing_zero_shot(args, pred, must_choice=False):
         pred = re.findall(r'A|B|C|D|E|F', pred)
     elif args.dataset in ("object_tracking"):
         pred = re.findall(r'A|B|C', pred)
-    elif args.dataset in ("gsm8k", "addsub", "multiarith", "svamp", "singleeq"):
+    elif args.dataset in ("gsm8k", "addsub", "multiarith", "svamp", "singleeq", "brainteaser"):
         if must_choice:
             pred = re.findall(r'A|B|C|D', pred)
         else:
