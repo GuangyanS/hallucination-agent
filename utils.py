@@ -15,6 +15,7 @@ import re
 import random
 import time
 import datetime
+import pandas as pd
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -290,7 +291,7 @@ def data_reader(args):
           questions.append(q)
           answers.append(a)            
     
-    elif args.dataset in ("riddlesense"):
+    elif args.dataset == "riddlesense":
         choice_index = ['A','B','C','D','E']
         with open(args.dataset_path) as file:
             for line in file:
@@ -306,6 +307,25 @@ def data_reader(args):
                 a = data["answerKey"]
                 questions.append(q)
                 answers.append(a)
+
+    elif args.dataset == "macgyver":
+        sheet_name = 'Sheet1'
+        xl = pd.ExcelFile(args.dataset_path)
+        df_problems = xl.parse(sheet_name) 
+        #collecting non-forced solutions
+        for _, row in df_problems.iterrows():
+            instruction_vanilla = f'Give a valid (feasible and efficient) solution very concisely. Use step1, step2, etc, and mention the tools to achieve each step. Use as few steps as possible and the answer should ideally be less than 100 words. When there is not a feasible solution given the constraint and provided tools, just say that it is not possible and give a very short justification.'
+
+            index = row['ID']
+            problem3 = row['Problem']
+            q = f"{problem3}\n\n{instruction_vanilla}"
+            if row['Solvable?'] == 'Yes':
+                a = "yes"
+            else:
+                a = "no"
+
+            questions.append(q)
+            answers.append(a)
 
 
     elif args.dataset in ("coin_flip", "last_letters"):
@@ -399,7 +419,7 @@ def answer_cleansing(args, pred, must_choice=False):
         else:
             pred = pred.replace(",", "")
             pred = [s for s in re.findall(r'-?\d+\.?\d*', pred)]
-    elif args.dataset in ("strategyqa", "coin_flip", "sarcasm"):
+    elif args.dataset in ("strategyqa", "coin_flip", "sarcasm", 'macgyver'):
         pred = pred.lower()
         pred = re.sub("\"|\'|\n|\.|\s|\:|\,"," ", pred)
         pred = pred.split(" ")
