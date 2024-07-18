@@ -16,14 +16,14 @@ def main():
     
     # print("OPENAI_API_KEY:")
     # print(os.getenv("OPENAI_API_KEY")[0:5] + '**********')
-    
-    # Initialize decoder class (load model and tokenizer) ...
-    decoder = HF_Decoder(args)
-    
+
     print("setup data loader ...")
     dataloader = setup_data_loader(args)
     print_now()
 
+    # Initialize decoder class (load model and tokenizer) ...
+    decoder = HF_Decoder(args)
+    
     if args.method == "few_shot":
         demo = create_demo_text(args, cot_flag=False)
     elif args.method == "few_shot_cot" or args.method == "auto_cot":
@@ -208,7 +208,7 @@ def parse_arguments():
         args.dataset_path = "./dataset/last_letters/last_letters.json"
         args.direct_answer_trigger = "\nTherefore, the answer is"
     elif args.dataset == "sarcasm":
-        args.dataset_path = "./dataset/Sarcasm/sarcasm.json"
+        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/sarcasm.json"
         args.direct_answer_trigger = "\nTherefore, is there any sarcasm in this sentence? Please answer Yes or No."
     else:
         raise ValueError("dataset is not properly defined ...")

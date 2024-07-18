@@ -231,19 +231,19 @@ def data_reader(args):
                     'First, we need to understand what sarcasm is. Sarcasm is a form of verbal irony, '+ '\n' \
                     'where the intended meaning of the words is the opposite of the literal meaning. '+ '\n' \
                     'In other words, the speaker is saying one thing but meaning the opposite. '
-        with open(args.dataset_path) as f:
-            json_data = json.load(f)
-            for line in json_data:
-                q = line["headline"] + prompt
-                a = line["is_sarcastic"]
+        with open(args.dataset_path) as file:
+            for line in file:
+                data = json.loads(line)
+                q = data["headline"] + prompt
+                a = data["is_sarcastic"]
                 if a == 1:
                     a = "yes"
                 else:
                     a = "no"
                 questions.append(q)
                 answers.append(a)
-        questions[:1000]
-        answers.append[:1000]
+        questions = questions[:1000]
+        answers = answers[:1000]
 
     elif args.dataset == "svamp":
       with open(args.dataset_path) as f:
