@@ -126,7 +126,7 @@ def parse_arguments():
 
     parser.add_argument("--random_seed", type=int, default=1, help="random seed")
     parser.add_argument(
-        "--dataset", type=str, default="multiarith", choices=["aqua", "gsm8k", "commonsensqa", "addsub", "multiarith",  "strategyqa", "svamp", "singleeq", "coin_flip", "last_letters"], help="dataset used for experiment"
+        "--dataset", type=str, default="multiarith", choices=["aqua", "gsm8k", "commonsensqa", "addsub", "multiarith",  "strategyqa", "sarcasm", "svamp", "singleeq", "coin_flip", "last_letters"], help="dataset used for experiment"
     )
     parser.add_argument(
         "--demo_path", type=str, default="demos/multiarith", help="pre-generated demos used for experiment"
