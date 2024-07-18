@@ -126,7 +126,7 @@ def parse_arguments():
 
     parser.add_argument("--random_seed", type=int, default=1, help="random seed")
     parser.add_argument(
-        "--dataset", type=str, default="multiarith", choices=["aqua", "gsm8k", "commonsensqa", "addsub", "multiarith",  "strategyqa", "sarcasm", "svamp", "singleeq", "coin_flip", "last_letters"], help="dataset used for experiment"
+        "--dataset", type=str, default="multiarith", choices=["aqua", "gsm8k", "commonsensqa", "addsub", "multiarith",  "strategyqa", "sarcasm", "svamp", "singleeq", "coin_flip", "last_letters", "riddlesense", "brainteaser"], help="dataset used for experiment"
     )
     parser.add_argument(
         "--demo_path", type=str, default="demos/multiarith", help="pre-generated demos used for experiment"
@@ -210,6 +210,12 @@ def parse_arguments():
     elif args.dataset == "sarcasm":
         args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/Sarcasm/sarcasm.jsonl"
         args.direct_answer_trigger = "\nTherefore, is there any sarcasm in this sentence? Please answer Yes or No."
+    elif args.dataset == "riddlesense":
+        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/RiddleSense/rs_dev.jsonl"
+        args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
+    elif args.dataset == "brainteaser":
+        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/Brainteaser/brainteaser.jsonl"
+        args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     else:
         raise ValueError("dataset is not properly defined ...")
         

@@ -381,7 +381,7 @@ def answer_cleansing(args, pred, must_choice=False):
         else:
             pred = pred.replace(",", "")
             pred = [s for s in re.findall(r'-?\d+\.?\d*', pred)]
-    elif args.dataset in ("strategyqa", "coin_flip"):
+    elif args.dataset in ("strategyqa", "coin_flip", "sarcasm"):
         pred = pred.lower()
         pred = re.sub("\"|\'|\n|\.|\s|\:|\,"," ", pred)
         pred = pred.split(" ")
