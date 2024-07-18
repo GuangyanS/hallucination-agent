@@ -242,6 +242,8 @@ def data_reader(args):
                     a = "no"
                 questions.append(q)
                 answers.append(a)
+        questions[:1000]
+        answers.append[:1000]
 
     elif args.dataset == "svamp":
       with open(args.dataset_path) as f:
