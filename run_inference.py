@@ -217,8 +217,8 @@ def parse_arguments():
         args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/Brainteaser/brainteaser.jsonl"
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     elif args.dataset == "macgyver":
-        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/MacGyver/macgyver.jsonl"
-        args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
+        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/MacGyver/problem_solution_pair.xlsx"
+        args.direct_answer_trigger = "\nTherefore, is the solution solvable? Please answer Yes or No."
     else:
         raise ValueError("dataset is not properly defined ...")
         
