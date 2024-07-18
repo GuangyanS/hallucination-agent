@@ -150,10 +150,10 @@ def parse_arguments():
         "--output_dir", type=str, default="/wudi/gysun/projs/hallucination-agent/experiment/strategyqa.pkl", help="output directory"
     )
     parser.add_argument(
-        "--max_length_cot", type=int, default=256, help="maximum length of output tokens by model for reasoning extraction"
+        "--max_length_cot", type=int, default=512, help="maximum length of output tokens by model for reasoning extraction"
     )
     parser.add_argument(
-        "--max_length_direct", type=int, default=512, help="maximum length of output tokens by model for answer extraction"
+        "--max_length_direct", type=int, default=1024, help="maximum length of output tokens by model for answer extraction"
     )
     parser.add_argument(
         "--limit_dataset_size", type=int, default=0, help="whether to limit test dataset size. if 0, the dataset size is unlimited and we use all the samples in the dataset for testing."

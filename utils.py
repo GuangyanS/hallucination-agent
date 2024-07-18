@@ -228,6 +228,9 @@ def data_reader(args):
               a = "no"
           questions.append(q)
           answers.append(a)
+        questions = questions[:500]
+        answers = answers[:500]
+
         
     elif args.dataset == "sarcasm":
         prompt = 'Task: Detect sarcasm, help me identify whether this sentence is sarcastic.' + '\n' \
@@ -328,6 +331,9 @@ def data_reader(args):
 
             questions.append(q)
             answers.append(a)
+        questions = questions[500:]
+        answers = answers[500:]
+        
 
     elif args.dataset == "brainteaser":
         data = []
