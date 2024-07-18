@@ -36,7 +36,7 @@ def main():
     generations = {}
     # create experiment folder if not avaibale
     if not os.path.exists('experiment'):
-        os.makedirs(args.output_dir, exist_ok=True)
+        os.makedirs('experiment', exist_ok=True)
         
 
     for i, data in enumerate(dataloader):
