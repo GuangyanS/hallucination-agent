@@ -352,7 +352,7 @@ def data_reader(args):
             Answer:""".format(sample['question'],sample['choice_list'][0],sample['choice_list'][1],sample['choice_list'][2],sample['choice_list'][3])
 
             questions.append(q)
-            answers.append(choice_list[sample['choice_list'].index(sample['label'])])
+            answers.append(choice_list[sample['label']])
 
 
 

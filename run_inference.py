@@ -83,7 +83,7 @@ def main():
             z2 = x + z + " " + args.direct_answer_trigger_for_zeroshot_cot
             max_length = args.max_length_direct
             pred, _ = decoder.decode(args, z2, max_length, extract=True)
-            print(z2 + pred)
+            # print(z2 + pred)
         else:
             pred = z
             print(x + pred)
