@@ -3,7 +3,7 @@ from transformers import AutoTokenizer
 import numpy as np
 
 # 读取pickle文件
-with open('experiment/strategyqa_test.pkl', 'rb') as file:
+with open('experiment/riddlesense.pkl', 'rb') as file:
     data = pickle.load(file)
 
 def calculate_entropy(probabilities):
