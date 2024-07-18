@@ -122,6 +122,7 @@ class HF_Decoder():
         model_inputs = self.tokenizer(input, return_tensors="pt").to("cuda")
         if extract:
             outputs = self.model.generate(**model_inputs, 
+                                        pad_token_id=self.tokenizer.eos_token_id,
                                         return_dict_in_generate=True, 
                                         output_scores=True, 
                                         max_length=max_length,
@@ -129,6 +130,7 @@ class HF_Decoder():
                                         )
         else:
             outputs = self.model.generate(**model_inputs, 
+                                        pad_token_id=self.tokenizer.eos_token_id,
                                         return_dict_in_generate=True, 
                                         output_scores=True, 
                                         max_length=max_length,
