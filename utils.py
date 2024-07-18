@@ -226,6 +226,19 @@ def data_reader(args):
           questions.append(q)
           answers.append(a)
         
+    elif args.dataset == "sarcasm":
+        with open(args.dataset_path) as f:
+            json_data = json.load(f)
+            for line in json_data:
+                q = line["headline"]
+                a = line["is_sarcastic"]
+                if a == 1:
+                    a = "yes"
+                else:
+                    a = "no"
+                questions.append(q)
+                answers.append(a)
+
     elif args.dataset == "svamp":
       with open(args.dataset_path) as f:
         json_data = json.load(f)

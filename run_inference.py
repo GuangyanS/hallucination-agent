@@ -207,6 +207,9 @@ def parse_arguments():
     elif args.dataset == "last_letters":
         args.dataset_path = "./dataset/last_letters/last_letters.json"
         args.direct_answer_trigger = "\nTherefore, the answer is"
+    elif args.dataset == "sarcasm":
+        args.dataset_path = "./dataset/Sarcasm/sarcasm.json"
+        args.direct_answer_trigger = "\nTherefore, is there any sarcasm in this sentence? Please answer Yes or No."
     else:
         raise ValueError("dataset is not properly defined ...")
         
