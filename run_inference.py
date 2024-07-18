@@ -40,8 +40,8 @@ def main():
         
 
     for i, data in enumerate(dataloader):
-        if i < args.resume_id - 1:
-        # if i < 297:
+        # if i < args.resume_id - 1:
+        if i > 10:
             continue
         output_line = {}
         
@@ -82,7 +82,7 @@ def main():
         if args.method == "zero_shot_cot":
             z2 = x + z + " " + args.direct_answer_trigger_for_zeroshot_cot
             max_length = args.max_length_direct
-            pred, _ = decoder.decode(args, z2, max_length)
+            pred, _ = decoder.decode(args, z2, max_length, extract=True)
             print(z2 + pred)
         else:
             pred = z
@@ -106,7 +106,7 @@ def main():
         total += 1 #np.array([y]).size(0)
         
         output_line["correct"] = correct
-        generations[i].update(output_line)
+        generations[i] = output_line
         
         if (args.limit_dataset_size != 0) and ((i+1) >= args.limit_dataset_size):
             break
@@ -147,7 +147,7 @@ def parse_arguments():
         "--method", type=str, default="auto_cot", choices=["zero_shot", "zero_shot_cot", "few_shot", "few_shot_cot", "auto_cot"], help="method"
     )
     parser.add_argument(
-        "--output_dir", type=str, default="experiment/strategyqa.pkl", help="output directory"
+        "--output_dir", type=str, default="/wudi/gysun/projs/hallucination-agent/experiment/strategyqa.pkl", help="output directory"
     )
     parser.add_argument(
         "--max_length_cot", type=int, default=256, help="maximum length of output tokens by model for reasoning extraction"
@@ -187,7 +187,7 @@ def parse_arguments():
         args.dataset_path = "./dataset/MultiArith/MultiArith.json"
         args.direct_answer_trigger = "\nTherefore, the answer (arabic numerals) is"
     elif args.dataset == "strategyqa":
-        args.dataset_path = "./dataset/StrategyQA/task.json"
+        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/StrategyQA/task.json"
         args.direct_answer_trigger = "\nTherefore, the answer (Yes or No) is"
     elif args.dataset == "svamp":
         args.dataset_path = "./dataset/SVAMP/SVAMP.json"

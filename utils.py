@@ -117,16 +117,24 @@ class HF_Decoder():
         self.tokenizer = AutoTokenizer.from_pretrained(args.model_path+args.model)
         self.model = AutoModelForCausalLM.from_pretrained(args.model_path+args.model, device_map="auto", torch_dtype=torch.float16)
  
-    def decode(self, args, input, max_length):
+    def decode(self, args, input, max_length, extract=False):
         model_inputs = self.tokenizer(input, return_tensors="pt").to("cuda")
-        outputs = self.model.generate(**model_inputs, 
-                                      return_dict_in_generate=True, 
-                                      output_scores=True, 
-                                      max_length=max_length,
-                                      do_sample=True,
-                                      temperature=args.temperature,
-                                      top_p=0.9
-                                      )
+        if extract:
+            outputs = self.model.generate(**model_inputs, 
+                                        return_dict_in_generate=True, 
+                                        output_scores=True, 
+                                        max_length=max_length,
+                                        do_sample=False,
+                                        )
+        else:
+            outputs = self.model.generate(**model_inputs, 
+                                        return_dict_in_generate=True, 
+                                        output_scores=True, 
+                                        max_length=max_length,
+                                        do_sample=True,
+                                        temperature=args.temperature,
+                                        top_p=0.9
+                                        )
         
         # Get log_likelihoods.
         # outputs.scores are the logits for the generated token.
