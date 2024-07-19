@@ -9,7 +9,7 @@ conda activate halu
 git clone https://github.com/GuangyanS/hallucination-agent
 cd hallucination-agent
 pip install --upgrade pip 
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Datasets
