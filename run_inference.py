@@ -5,6 +5,7 @@ Adapted from https://github.com/kojima-takeshi188/zero_shot_cot
 import argparse
 from utils import *
 import pickle
+from tqdm import tqdm
 
 def main():
     args = parse_arguments()
@@ -39,7 +40,7 @@ def main():
         os.makedirs('experiment', exist_ok=True)
         
 
-    for i, data in enumerate(dataloader):
+    for i, data in enumerate(tqdm(dataloader)):
         # if i < args.resume_id - 1:
         # if i > 10:
         #     continue

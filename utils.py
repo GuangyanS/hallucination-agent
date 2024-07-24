@@ -119,25 +119,54 @@ class HF_Decoder():
         self.model = AutoModelForCausalLM.from_pretrained(args.model_path+args.model, device_map="auto", torch_dtype=torch.float16)
  
     def decode(self, args, input, max_length, extract=False):
-        model_inputs = self.tokenizer(input, return_tensors="pt").to("cuda")
+
+        terminators = [
+            self.tokenizer.eos_token_id,
+            self.tokenizer.convert_tokens_to_ids("<|eot_id|>")
+        ]
+
         if extract:
-            outputs = self.model.generate(**model_inputs, 
+
+            messages = [
+                {"role": "system", "content": "You are a helpful chatbot"},
+                {"role": "user", "content": input},
+            ]
+            input_ids = self.tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                return_tensors="pt"
+            ).to("cuda")
+
+            outputs = self.model.generate(input_ids, 
                                         pad_token_id=self.tokenizer.eos_token_id,
                                         return_dict_in_generate=True, 
                                         output_scores=True, 
                                         max_length=max_length,
+                                        eos_token_id=terminators,
                                         do_sample=False,
                                         )
         else:
-            outputs = self.model.generate(**model_inputs, 
+            messages = [
+                {"role": "system", "content": "You are a creative chatbot who always think outside the box and answer creatively!"},
+                {"role": "user", "content": input},
+            ]
+            input_ids = self.tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                return_tensors="pt"
+            ).to("cuda")
+
+            outputs = self.model.generate(input_ids, 
                                         pad_token_id=self.tokenizer.eos_token_id,
                                         return_dict_in_generate=True, 
                                         output_scores=True, 
                                         max_length=max_length,
+                                        eos_token_id=terminators,
                                         do_sample=True,
                                         temperature=args.temperature,
                                         top_p=0.9
                                         )
+        
         
         # Get log_likelihoods.
         # outputs.scores are the logits for the generated token.
@@ -161,7 +190,7 @@ class HF_Decoder():
         if len(log_likelihoods) == 0:
             raise ValueError
         
-        response = self.tokenizer.batch_decode(outputs.sequences[:, model_inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
+        response = self.tokenizer.batch_decode(outputs.sequences[:, input_ids.shape[1]:], skip_special_tokens=True)[0]
         
         return response, log_likelihoods
     
@@ -331,8 +360,6 @@ def data_reader(args):
 
             questions.append(q)
             answers.append(a)
-        questions = questions[500:]
-        answers = answers[500:]
         
 
     elif args.dataset == "brainteaser":
