@@ -26,11 +26,6 @@ charset-normalizer
 clarabel==0.7.1
 click==8.1.7
 comm==0.2.2
-conda 
-conda-content-trust 
-conda-libmamba-solver
-conda-package-handling 
-conda_package_streaming 
 contourpy
 cryptography 
 cvxpy==1.4.3
