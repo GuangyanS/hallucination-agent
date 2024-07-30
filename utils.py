@@ -360,7 +360,6 @@ def data_reader(args):
 
             questions.append(q)
             answers.append(a)
-        
 
     elif args.dataset == "brainteaser":
         data = []
