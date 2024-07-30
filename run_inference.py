@@ -76,8 +76,18 @@ def main():
         max_length = args.max_length_cot if "cot" in args.method else args.max_length_direct
         z, log_likelihoods = decoder.decode(args, x, max_length)
 
+        # Explain answer with prompt
+        explain_prompt = """
+        Question: {x} \n
+        Answer: {z} \n
+        Please Explain the answer in Detail:
+        """.format(x=x, z=z)
+
+        explaination, _ = decoder.decode(args, explain_prompt, max_length * 2)
+
         output_line["rationale"] = z
         output_line["token_log_likelihoods"] = log_likelihoods
+        output_line["post_explaination"] = explaination
 
         # Answer extraction for zero-shot-cot ...
         if args.method == "zero_shot_cot":
