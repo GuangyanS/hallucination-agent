@@ -6,3 +6,5 @@ matplotlib
 sentence-transformers
 openpyxl
 jupyter
+lmdeploy==0.5.1
+pandas
