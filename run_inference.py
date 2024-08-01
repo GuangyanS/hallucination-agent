@@ -178,6 +178,9 @@ def parse_arguments():
     parser.add_argument(
         "--log_dir", type=str, default="./log/", help="log directory"
     )
+    parser.add_argument(
+        "--data_path", type=str, default="./dataset/", help="data directory"
+    )
     
     args = parser.parse_args()
     
@@ -198,7 +201,7 @@ def parse_arguments():
         args.dataset_path = "./dataset/MultiArith/MultiArith.json"
         args.direct_answer_trigger = "\nTherefore, the answer (arabic numerals) is"
     elif args.dataset == "strategyqa":
-        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/StrategyQA/task.json"
+        args.dataset_path = args.data_path + "StrategyQA/task.json"
         args.direct_answer_trigger = "\nTherefore, the answer (Yes or No) is"
     elif args.dataset == "svamp":
         args.dataset_path = "./dataset/SVAMP/SVAMP.json"
@@ -219,16 +222,16 @@ def parse_arguments():
         args.dataset_path = "./dataset/last_letters/last_letters.json"
         args.direct_answer_trigger = "\nTherefore, the answer is"
     elif args.dataset == "sarcasm":
-        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/Sarcasm/sarcasm.jsonl"
+        args.dataset_path =  args.data_path + "Sarcasm/sarcasm.jsonl"
         args.direct_answer_trigger = "\nTherefore, is there any sarcasm in this sentence? Please answer Yes or No."
     elif args.dataset == "riddlesense":
-        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/RiddleSense/rs_dev.jsonl"
+        args.dataset_path = args.data_path + "RiddleSense/rs_dev.jsonl"
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     elif args.dataset == "brainteaser":
-        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/BrainTeaser/"
+        args.dataset_path = args.data_path + "BrainTeaser/"
         args.direct_answer_trigger = "\nTherefore, among A through D, the answer is"
     elif args.dataset == "macgyver":
-        args.dataset_path = "/wudi/gysun/projs/hallucination-agent/dataset/MacGyver/problem_solution_pair.xlsx"
+        args.dataset_path = args.data_path + "MacGyver/problem_solution_pair.xlsx"
         args.direct_answer_trigger = "\nTherefore, is the solution solvable? Please answer Yes or No."
     else:
         raise ValueError("dataset is not properly defined ...")
