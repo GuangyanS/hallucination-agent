@@ -1,6 +1,7 @@
-python /wudi/gysun/projs/hallucination-agent/run_inference.py \
-    --dataset macgyver \
-    --demo_path demos/multiarith \
-    --model Meta-Llama-3-8B-Instruct \
-    --method zero_shot_cot \
-    --output_dir /wudi/gysun/projs/hallucination-agent/experiment/macgyver_20.pkl
+#!/bin/bash
+
+python /home/tw9146/gysun/hallucination-agent/run_inference.py \
+    --dataset strategyqa \
+    --model Meta-Llama-3.1-8B-Instruct \
+    --method zero_shot \
+    --output_dir /home/tw9146/gysun/hallucination-agent/experiment/strategyqa.pkl

@@ -1,0 +1,17 @@
+usage: run_inference.py [-h] [--random_seed RANDOM_SEED]
+                        [--dataset {aqua,gsm8k,commonsensqa,addsub,multiarith,strategyqa,sarcasm,svamp,singleeq,coin_flip,last_letters,riddlesense,brainteaser,macgyver}]
+                        [--demo_path DEMO_PATH] [--resume_id RESUME_ID]
+                        [--minibatch_size {1}]
+                        [--max_num_worker MAX_NUM_WORKER]
+                        [--model_path MODEL_PATH]
+                        [--model {gpt3,Meta-Llama-3.1-8B-Instruct,Meta-Llama-3-8B-Instruct,Qwen2-0.5B}]
+                        [--method {zero_shot,zero_shot_cot,few_shot,few_shot_cot,auto_cot}]
+                        [--output_dir OUTPUT_DIR]
+                        [--max_length_cot MAX_LENGTH_COT]
+                        [--max_length_direct MAX_LENGTH_DIRECT]
+                        [--limit_dataset_size LIMIT_DATASET_SIZE]
+                        [--api_time_interval API_TIME_INTERVAL]
+                        [--temperature TEMPERATURE] [--log_dir LOG_DIR]
+                        [--data_path DATA_PATH]
+run_inference.py: error: unrecognized arguments:  
+run.sh: line 5: --model: command not found

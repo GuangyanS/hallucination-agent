@@ -85,9 +85,19 @@ def main():
 
         explaination, _ = decoder.decode(args, explain_prompt, max_length * 2)
 
-        output_line["rationale"] = z
+         # output_line["rationale"] = z
         output_line["token_log_likelihoods"] = log_likelihoods
         output_line["post_explaination"] = explaination
+
+        COT_REFLECT_INSTRUCTION = """You are an advanced reasoning agent that can improve based on self refection. You will be given an explanation reasoning trial in which you were given access to relevant context and a question to answer. Please reflect and if you were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>] or there is a phrasing discrepancy with your provided answer and the answer key. In a few sentences, Diagnose a possible reason for failure or phrasing discrepancy and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.
+        Previous trial:
+        Question: {question}
+        Answer: {answer}
+        Explaination: {explaination}
+        Reflection:""".format(question=x, answer=z, explaination=explaination)
+
+        reflection, _ = decoder.decode(args, COT_REFLECT_INSTRUCTION, max_length * 3)
+        output_line["reflection"] = reflection
 
         # Answer extraction for zero-shot-cot ...
         if args.method == "zero_shot_cot":
@@ -149,16 +159,16 @@ def parse_arguments():
     
     parser.add_argument("--max_num_worker", type=int, default=0, help="maximum number of workers for dataloader")
     
-    parser.add_argument("--model_path", type=str, default="/wudi/gysun/init_weights/", help="model path")
+    parser.add_argument("--model_path", type=str, default="/home/tw9146/gysun/init_weights/", help="model path")
     parser.add_argument(
-        "--model", type=str, default="gpt3-xl", choices=["gpt3", "Meta-Llama-3-8B-Instruct", "Qwen2-0.5B"], help="model used for decoding. Note that 'gpt3' are the smallest models."
+        "--model", type=str, default="gpt3-xl", choices=["gpt3","Meta-Llama-3.1-8B-Instruct", "Meta-Llama-3-8B-Instruct", "Qwen2-0.5B"], help="model used for decoding. Note that 'gpt3' are the smallest models."
     )
     
     parser.add_argument(
         "--method", type=str, default="auto_cot", choices=["zero_shot", "zero_shot_cot", "few_shot", "few_shot_cot", "auto_cot"], help="method"
     )
     parser.add_argument(
-        "--output_dir", type=str, default="/wudi/gysun/projs/hallucination-agent/experiment/strategyqa.pkl", help="output directory"
+        "--output_dir", type=str, default="/home/tw9146/gysun/hallucination-agent/experiment/strategyqa.pkl", help="output directory"
     )
     parser.add_argument(
         "--max_length_cot", type=int, default=512, help="maximum length of output tokens by model for reasoning extraction"
