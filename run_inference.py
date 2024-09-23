@@ -41,9 +41,6 @@ def main():
         
 
     for i, data in enumerate(tqdm(dataloader)):
-        # if i < args.resume_id - 1:
-        # if i > 10:
-        #     continue
         output_line = {}
         
         print('*************************')
@@ -74,45 +71,50 @@ def main():
         
         # Answer experiment by generating text ...
         max_length = args.max_length_cot if "cot" in args.method else args.max_length_direct
-        z, log_likelihoods = decoder.decode(args, x, max_length)
+        responses = decoder.decode(args, x, max_length)
+        output_line["samples"] = responses
+        # # Explain answer with prompt
+        # explain_prompt = """
+        # Question: {x} \n
+        # Answer: {z} \n
+        # Provide a clear and concise list of reasons or brief, solid explanations for why you answer this:
+        # """.format(x=x, z=z)
 
-        # Explain answer with prompt
-        explain_prompt = """
-        Question: {x} \n
-        Answer: {z} \n
-        Please Explain the answer in Detail:
-        """.format(x=x, z=z)
+        # explaination, _ = decoder.decode(args, explain_prompt, max_length * 2)
 
-        explaination, _ = decoder.decode(args, explain_prompt, max_length * 2)
+        #  # output_line["rationale"] = z
+        # output_line["token_log_likelihoods"] = log_likelihoods
+        # output_line["post_explaination"] = explaination
 
-         # output_line["rationale"] = z
-        output_line["token_log_likelihoods"] = log_likelihoods
-        output_line["post_explaination"] = explaination
+        # COT_REFLECT_INSTRUCTION = """
+        # Question: {question}
+        # Answer: {answer}
+        # Explaination: {explaination}
+        # Reflection:""".format(question=x, answer=z, explaination=explaination)
 
-        COT_REFLECT_INSTRUCTION = """You are an advanced reasoning agent that can improve based on self refection. You will be given an explanation reasoning trial in which you were given access to relevant context and a question to answer. Please reflect and if you were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>] or there is a phrasing discrepancy with your provided answer and the answer key. In a few sentences, Diagnose a possible reason for failure or phrasing discrepancy and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.
-        Previous trial:
-        Question: {question}
-        Answer: {answer}
-        Explaination: {explaination}
-        Reflection:""".format(question=x, answer=z, explaination=explaination)
-
-        reflection, _ = decoder.decode(args, COT_REFLECT_INSTRUCTION, max_length * 3)
-        output_line["reflection"] = reflection
+        # reflection, _ = decoder.decode(args, COT_REFLECT_INSTRUCTION, max_length * 4, reflection = True)
+        # output_line["reflection"] = reflection
 
         # Answer extraction for zero-shot-cot ...
         if args.method == "zero_shot_cot":
-            z2 = x + z + " " + args.direct_answer_trigger_for_zeroshot_cot
-            max_length = args.max_length_direct
-            pred, _ = decoder.decode(args, z2, max_length, extract=True)
-            # print(z2 + pred)
+            preds = []
+            for z in responses:
+                z2 = x + z + " " + args.direct_answer_trigger_for_zeroshot_cot
+                max_length = args.max_length_direct
+                pred_responses = decoder.decode(args, z2, max_length, extract=True)
+                # Assuming you want to take the first response from the extracted responses
+                pred = pred_responses[0]
+                # Cleansing of predicted answer
+                pred = answer_cleansing(args, pred)
+                preds.append(pred)
         else:
             pred = z
             print(x + pred)
 
         # Clensing of predicted answer ...
-        pred = answer_cleansing(args, pred)
+        pred = get_most_frequent_answer(args, preds)
         
-        
+        output_line["pred_samples"] = preds
         output_line["pred_ans"] = pred
         output_line["wrap_que"] = x
 
@@ -159,9 +161,9 @@ def parse_arguments():
     
     parser.add_argument("--max_num_worker", type=int, default=0, help="maximum number of workers for dataloader")
     
-    parser.add_argument("--model_path", type=str, default="/home/tw9146/gysun/init_weights/", help="model path")
+    parser.add_argument("--model_path", type=str, default="/spl_data/gs3260/init_weights/", help="model path")
     parser.add_argument(
-        "--model", type=str, default="gpt3-xl", choices=["gpt3","Meta-Llama-3.1-8B-Instruct", "Meta-Llama-3-8B-Instruct", "Qwen2-0.5B"], help="model used for decoding. Note that 'gpt3' are the smallest models."
+        "--model", type=str, default="gpt3-xl", choices=["gpt3","Meta-Llama-3.1-8B-Instruct", "Meta-Llama-3-8B-Instruct", "Qwen2.5-7B-Instruct", "Meta-Llama-3.1-8B-Instruct"], help="model used for decoding. Note that 'gpt3' are the smallest models."
     )
     
     parser.add_argument(
@@ -171,10 +173,10 @@ def parse_arguments():
         "--output_dir", type=str, default="/home/tw9146/gysun/hallucination-agent/experiment/strategyqa.pkl", help="output directory"
     )
     parser.add_argument(
-        "--max_length_cot", type=int, default=512, help="maximum length of output tokens by model for reasoning extraction"
+        "--max_length_cot", type=int, default=1024, help="maximum length of output tokens by model for reasoning extraction"
     )
     parser.add_argument(
-        "--max_length_direct", type=int, default=1024, help="maximum length of output tokens by model for answer extraction"
+        "--max_length_direct", type=int, default=512, help="maximum length of output tokens by model for answer extraction"
     )
     parser.add_argument(
         "--limit_dataset_size", type=int, default=0, help="whether to limit test dataset size. if 0, the dataset size is unlimited and we use all the samples in the dataset for testing."
@@ -183,13 +185,16 @@ def parse_arguments():
         "--api_time_interval", type=float, default=1.0, help="sleep between runs to avoid excedding the rate limit of openai api"
     )
     parser.add_argument(
-        "--temperature", type=float, default=0.9, help="temperature for GPT-3"
+        "--temperature", type=float, default=0.8, help="temperature for GPT-3"
     )
     parser.add_argument(
         "--log_dir", type=str, default="./log/", help="log directory"
     )
     parser.add_argument(
         "--data_path", type=str, default="./dataset/", help="data directory"
+    )
+    parser.add_argument(
+        "--sample_n", type=int, default=1, help="number of samples to generate"
     )
     
     args = parser.parse_args()
@@ -199,7 +204,7 @@ def parse_arguments():
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     elif args.dataset == "gsm8k":
         args.dataset_path = "./dataset/grade-school-math/test.jsonl"
-        args.direct_answer_trigger = "\nTherefore, the answer (arabic numerals) is"
+        args.direct_answer_trigger = "\nTherefore, the direct answer (arabic numerals) without any explaination is"
     elif args.dataset == "commonsensqa":
         args.dataset_path = "./dataset/CommonsenseQA/dev_rand_split.jsonl"
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
@@ -233,16 +238,16 @@ def parse_arguments():
         args.direct_answer_trigger = "\nTherefore, the answer is"
     elif args.dataset == "sarcasm":
         args.dataset_path =  args.data_path + "Sarcasm/sarcasm.jsonl"
-        args.direct_answer_trigger = "\nTherefore, is there any sarcasm in this sentence? Please answer Yes or No."
+        args.direct_answer_trigger = "\nTherefore, is there any sarcasm in this sentence? Please direct answer Yes or No."
     elif args.dataset == "riddlesense":
         args.dataset_path = args.data_path + "RiddleSense/rs_dev.jsonl"
         args.direct_answer_trigger = "\nTherefore, among A through E, the answer is"
     elif args.dataset == "brainteaser":
         args.dataset_path = args.data_path + "BrainTeaser/"
-        args.direct_answer_trigger = "\nTherefore, among A through D, the answer is"
+        args.direct_answer_trigger = "\nTherefore, answer the question in one letter:"
     elif args.dataset == "macgyver":
         args.dataset_path = args.data_path + "MacGyver/problem_solution_pair.xlsx"
-        args.direct_answer_trigger = "\nTherefore, is the solution solvable? Please answer Yes or No."
+        args.direct_answer_trigger = "\nTherefore, a concise plan would be "
     else:
         raise ValueError("dataset is not properly defined ...")
         

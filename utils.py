@@ -16,8 +16,43 @@ import random
 import time
 import datetime
 import pandas as pd
+from collections import Counter
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+def most_frequent_item(items):
+    # Simple method: Counts frequency of each item as is
+    count = Counter(items)
+    most_common_item = count.most_common(1)[0][0]
+    return most_common_item
+
+def most_frequent_item_normalized(items):
+    # Mathematical method: Normalizes numerical strings to handle numerical equivalence
+    normalized_items = []
+    for item in items:
+        try:
+            # Try to convert to float and format
+            num = float(item)
+            normalized_item = f"{num:g}"  # Remove insignificant trailing zeros
+        except ValueError:
+            # If not a number, keep as is
+            normalized_item = item
+        normalized_items.append(normalized_item)
+    
+    # Count the frequency of normalized items
+    count = Counter(normalized_items)
+    most_common_item = count.most_common(1)[0][0]
+    return most_common_item
+
+# Usage based on args.dataset
+def get_most_frequent_answer(args, items):
+    if args.dataset in ['multiarith', 'gsm8k']:
+        # Use the mathematical method
+        result = most_frequent_item_normalized(items)
+    else:
+        # Use the simple method
+        result = most_frequent_item(items)
+    return result
 
 def shuffleDict(d):
   keys = list(d.keys())
@@ -118,7 +153,7 @@ class HF_Decoder():
         self.tokenizer = AutoTokenizer.from_pretrained(args.model_path+args.model)
         self.model = AutoModelForCausalLM.from_pretrained(args.model_path+args.model, device_map="auto", torch_dtype=torch.float16)
  
-    def decode(self, args, input, max_length, extract=False):
+    def decode(self, args, input, max_length, extract=False, reflection = False):
 
         terminators = [
             self.tokenizer.eos_token_id,
@@ -141,22 +176,86 @@ class HF_Decoder():
                                         pad_token_id=self.tokenizer.eos_token_id,
                                         return_dict_in_generate=True, 
                                         output_scores=True, 
-                                        max_length=max_length,
+                                        max_new_tokens=max_length,
                                         eos_token_id=terminators,
                                         do_sample=False,
                                         )
         else:
-            messages = [
-                {"role": "system", "content": "You are a creative chatbot who always think outside the box and answer creatively!"},
-                {"role": "user", "content": input},
-            ]
+            if reflection:
+                REFLECT_INSTRUCTION = """
+                You are an critical AI assistant designed to provide accurate and creative responses. After providing an answer and its explanation to a question, you will conduct a self-reflection based on the following criteria and output a score for each aspect in JSON format (scale: 1-5)
+                1. **Logical correctness**: Is the answer logically consistent with the information provided?
+                2. **Common sense accuracy**: Does the response align with everyday reasoning and common knowledge?
+                3. **Factual accuracy**: Is the information factually correct?
+                4. **Relevance**: Does the explanation directly and appropriately address the user's question?
+                5. **Clarity**: Is the response clear and easy for the user to understand?
+                6. **Completeness**: Does the answer provide sufficient information without being overly detailed?
+                You will then provide an overall judgment on whether the response is believable or not (true/false). If the answer is not believable, you will revise and output a corrected answer. Here’s the format for the output:
+                {
+                    "scores": {
+                    "logical_correctness": X,
+                    "common_sense_accuracy": X,"
+                    "factual_accuracy": X,"
+                    "relevance": X,"
+                    "clarity": X,"
+                    "completeness": X"
+                },"
+                "believable": true/false,"
+                "revised_answer": "Your revised answer here (if applicable)"
+                }
+                """
+                REFLECT_INSTRUCTION = """
+                You are an critical AI assistant designed to provide accurate and creative responses. After providing an answer and its explanation to a question, you will conduct a self-reflection based on the following criteria for each aspect in JSON format to output if the answer is believable or not (true/false) and a revised answer if applicable:
+                1. **Logical correctness**: Is the answer logically consistent with the information provided?
+                2. **Common sense accuracy**: Does the response align with everyday reasoning and common knowledge?
+                3. **Factual accuracy**: Is the information factually correct?
+                4. **Relevance**: Does the explanation directly and appropriately address the user's question?
+                5. **Clarity**: Is the response clear and easy for the user to understand?
+                6. **Completeness**: Does the answer provide sufficient information without being overly detailed?
+                Analyze the response concisely with all the available choices or reasoning path with the above criteria.
+                You will then provide an overall judgment on whether the response is believable or not (true/false). If the answer is not believable, you will revise and output a corrected answer. Here’s the format for the output:
+                {
+                "believable": true/false,"
+                "revised_answer": "Your revised answer here (if applicable)"
+                }
+                Strictly follow the json output format and make the self reflection concise and to the point.
+                """
+                messages = [
+                    {"role": "system", "content": REFLECT_INSTRUCTION},
+                    {"role": "user", "content": input},
+                ]
+            else:
+                messages = [
+                    {"role": "system", "content": "You are an AI assistant designed to prioritize accurate instruction-following while providing thoughtful and creative responses."},
+                    {"role": "user", "content": input},
+                ]
+                messages = [
+                    {"role": "system", "content": "You are an AI assistant designed to be helpful."},
+                    {"role": "user", "content": input},
+                ]
             input_ids = self.tokenizer.apply_chat_template(
                 messages,
                 add_generation_prompt=True,
                 return_tensors="pt"
             ).to("cuda")
-
-            outputs = self.model.generate(input_ids, 
+            
+            if args.model == "Qwen2.5-7B-Instruct":
+                 attention_mask = (input_ids != self.tokenizer.pad_token_id).long()
+                 
+                 outputs = self.model.generate(
+                        input_ids,
+                        attention_mask=attention_mask,
+                        return_dict_in_generate=True,
+                        output_scores=True,
+                        max_length=max_length,
+                        do_sample=True,
+                        temperature=args.temperature,
+                        num_return_sequences=args.sample_n,
+                        top_k=50
+                    )
+                 
+            elif "Meta-Llama" in args.model:
+                outputs = self.model.generate(input_ids, 
                                         pad_token_id=self.tokenizer.eos_token_id,
                                         return_dict_in_generate=True, 
                                         output_scores=True, 
@@ -164,35 +263,50 @@ class HF_Decoder():
                                         eos_token_id=terminators,
                                         do_sample=True,
                                         temperature=args.temperature,
-                                        top_p=0.9
+                                        num_return_sequences=args.sample_n,
+                                        top_k=50
                                         )
-        
-        
-        # Get log_likelihoods.
-        # outputs.scores are the logits for the generated token.
-        # outputs.scores is a tuple of len = n_generated_tokens.
-        # Each entry is shape (bs, vocabulary size).
-        # outputs.sequences is the sequence of all tokens: input and generated.
-        transition_scores = self.model.compute_transition_scores(
-            outputs.sequences, outputs.scores, normalize_logits=True)
-        # Transition_scores[0] only contains the scores for the first generated tokens.
+                
+            elif args.model == "Mistral-7B-Instruct-v0.3":
+                
+                outputs = self.model.generate(input_ids, 
+                                        pad_token_id=self.tokenizer.eos_token_id,
+                                        return_dict_in_generate=True, 
+                                        output_scores=True, 
+                                        max_length=max_length,
+                                        eos_token_id=terminators,
+                                        do_sample=True,
+                                        temperature=args.temperature,
+                                        num_return_sequences=args.sample_n,
+                                        top_k=50
+                                        )
 
-        log_likelihoods = [score.item() for score in transition_scores[0]]
-        # if len(log_likelihoods) == 1:
-        #     logging.warning('Taking first and only generation for log likelihood!')
-        #     log_likelihoods = log_likelihoods
-        # else:
-        #     log_likelihoods = log_likelihoods[:n_generated]
-
-        # if len(log_likelihoods) == self.max_new_tokens:
-        #     logging.warning('Generation interrupted by max_token limit.')
-
-        if len(log_likelihoods) == 0:
-            raise ValueError
         
-        response = self.tokenizer.batch_decode(outputs.sequences[:, input_ids.shape[1]:], skip_special_tokens=True)[0]
+        # # Get log_likelihoods.
+        # # outputs.scores are the logits for the generated token.
+        # # outputs.scores is a tuple of len = n_generated_tokens.
+        # # Each entry is shape (bs, vocabulary size).
+        # # outputs.sequences is the sequence of all tokens: input and generated.
+        # transition_scores = self.model.compute_transition_scores(
+        #     outputs.sequences, outputs.scores, normalize_logits=True)
+        # # Transition_scores[0] only contains the scores for the first generated tokens.
+
+        # log_likelihoods = [score.item() for score in transition_scores[0]]
+        # # if len(log_likelihoods) == 1:
+        # #     logging.warning('Taking first and only generation for log likelihood!')
+        # #     log_likelihoods = log_likelihoods
+        # # else:
+        # #     log_likelihoods = log_likelihoods[:n_generated]
+
+        # # if len(log_likelihoods) == self.max_new_tokens:
+        # #     logging.warning('Generation interrupted by max_token limit.')
+
+        # if len(log_likelihoods) == 0:
+        #     raise ValueError
         
-        return response, log_likelihoods
+        responses = self.tokenizer.batch_decode(outputs.sequences[:, input_ids.shape[1]:], skip_special_tokens=True)
+        
+        return responses
     
 
 def data_reader(args):
@@ -233,6 +347,7 @@ def data_reader(args):
               choice += c["text"]
           questions.append(json_res["question"]["stem"].strip() + " " + choice)
           answers.append(json_res["answerKey"])
+        
 
     elif args.dataset in ("addsub", "multiarith", "singleeq"):
       with open(args.dataset_path) as f:
@@ -257,9 +372,6 @@ def data_reader(args):
               a = "no"
           questions.append(q)
           answers.append(a)
-        questions = questions[:500]
-        answers = answers[:500]
-
         
     elif args.dataset == "sarcasm":
         prompt = 'Task: Detect sarcasm, help me identify whether this sentence is sarcastic.' + '\n' \
@@ -277,8 +389,8 @@ def data_reader(args):
                     a = "no"
                 questions.append(q)
                 answers.append(a)
-        questions = questions[:1000]
-        answers = answers[:1000]
+        questions = questions[0:1000]
+        answers = answers[0:1000]
 
     elif args.dataset == "svamp":
       with open(args.dataset_path) as f:

@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset", "riddlesense",
+                "--model", "Meta-Llama-3.1-8B-Instruct",
+                "--method", "zero_shot_cot",
+                "--sample_n", "15",
+                "--output_dir", "experiment/riddlesense.pkl"
+            ],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+            }       
+        }
+    ]
+}
